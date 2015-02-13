@@ -1,0 +1,32 @@
+{
+  "name": "gulp-her-jsWrapper",
+  "version": "0.0.1",
+  "description": "wrap define function for js files",
+  "author": {
+    "name": "huangyi"
+  },
+  "bugs": {
+    "url": "https://github.com/ustbhuangyi/gulp-her-jsWrapper/issues"
+  },
+  "engines": {
+    "node": ">=0.9"
+  },
+  "homepage": "https://github.com/ustbhuangyi/gulp-her-jsWrapper/",
+  "keywords": [
+    "gulpplugin",
+    "amd",
+    "her",
+    "js",
+    "wrpper"
+  ],
+  "licenses": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ustbhuangyi/gulp-her-jsWrapper.git"
+  },
+  "dependencies": {
+    "gulp-util": ">=3.0.0 <4.0.0-0",
+    "through2": ">=0.6.1 <1.0.0-0"
+  }
+}
