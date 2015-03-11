@@ -1,32 +1,53 @@
 {
-  "name": "gulp-her-jswrapper",
-  "version": "0.0.1",
-  "description": "wrap define function for js files",
+  "name": "gulp-her-outputmap",
+  "version": "0.0.2",
+  "description": "output resource map for her runtime via gulp",
   "author": {
-    "name": "huangyi"
+    "name": "huangyi",
+    "email": "ustbhuangyi@gmail.com"
   },
   "bugs": {
-    "url": "https://github.com/ustbhuangyi/gulp-her-jsWrapper/issues"
+    "url": "https://github.com/ustbhuangyi/gulp-her-outputmap/issues"
   },
   "engines": {
     "node": ">=0.9"
   },
-  "homepage": "https://github.com/ustbhuangyi/gulp-her-jsWrapper/",
+  "homepage": "https://github.com/ustbhuangyi/gulp-her-outputmap/",
   "keywords": [
     "gulpplugin",
-    "amd",
     "her",
-    "js",
-    "wrpper"
+    "map"
   ],
   "licenses": "MIT",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:ustbhuangyi/gulp-her-jsWrapper.git"
+    "url": "git@github.com:ustbhuangyi/gulp-her-outputmap.git"
   },
   "dependencies": {
     "gulp-util": ">=3.0.0 <4.0.0-0",
-    "through2": ">=0.6.1 <1.0.0-0"
-  }
+    "vinyl": "^0.4.0"
+  },
+  "gitHead": "dfd8626f63e52c422e93a1e39aef7d322b6f2943",
+  "_id": "gulp-her-outputmap@0.0.1",
+  "scripts": {},
+  "_shasum": "b161804f59245e64d4cd471fa73e910e1baa8a52",
+  "_from": "gulp-her-outputmap@0.0.1",
+  "_npmVersion": "1.4.28",
+  "_npmUser": {
+    "name": "ustbhuangyi",
+    "email": "ustbhuangyi@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "ustbhuangyi",
+      "email": "ustbhuangyi@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "b161804f59245e64d4cd471fa73e910e1baa8a52",
+    "tarball": "http://registry.npmjs.org/gulp-her-outputmap/-/gulp-her-outputmap-0.0.1.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/gulp-her-outputmap/-/gulp-her-outputmap-0.0.1.tgz"
 }

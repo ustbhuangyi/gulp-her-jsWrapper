@@ -1,92 +1,101 @@
 /**
- * analysis 'require(xxx)' and wrap define function
+ * output json map for the runtime
+ * eg:
+ * {
+ *    "tpl": {
+ *      "demo:page/index.tpl": {
+ *           "src": "/template/demo/page/index.tpl",
+ *           "type": "tpl"
+ *       },
+ *       ...
+ *    },
+ *    "res": {
+ *      "d41d8cd": {
+ *           "src": "/static/demo/page/index.css",
+ *           "type": "css",
+ *           "defines": [
+ *               "demo:page/index.css"
+ *           ]
+ *       },
+ *       ...
+ *    },
+ *    "pkg": {
+ *       "6a5a5bb": {
+ *           "src": "/static/demo/pkg/aio.css",
+ *           "type": "css",
+ *           "defines": [
+ *               "demo:widget/hehe/hehe.css",
+ *               "demo:resource/css/common.css"
+ *           ],
+ *           "requires": [],
+ *           "requireAsyncs": []
+ *       },
+ *       ...
+ *    }
+ * }
  */
 'use strict';
 
 var gutil = require('gulp-util');
-var through = require('through2');
-var PluginError = gutil.PluginError;
+var File = require('vinyl');
 
-var stringRegStr = '(?:' +
-  '\"(?:[^\\\\\"\\r\\n\\f]|\\\\[\\s\\S])*\"' + //match the " delimiter string
-  '|' +
-  '\'(?:[^\\\\\'\\r\\n\\f]|\\\\[\\s\\S])*\'' + //match the ' delimiter string
-  ')';
-var jscommentRegStr = '(?:' +
-  '\\/\\/[^\\r\\n\\f]*' + // match the single line comment
-  '|' +
-  '\\/\\*[\\s\\S]+?\\*\\/' + //match the multi line comment
-  ')';
+module.exports = function (ret, opt) {
 
-//construct the regexExp to analysis strings like require("xxx") ，string and comment first。
-var requireRegStr = stringRegStr + '|' +
-  jscommentRegStr + '|' +
-  '([^\\$\\.]|^)(\\brequire\\s*\\(\\s*(' +
-  stringRegStr + ')\\s*\\))';
+  if (!ret)
+    return;
 
-var defaultDeps = ['global', 'module', 'exports', 'require'];
+  opt = opt || {};
+  var useHash = her.config.get('useHash');
+  var useDomain = her.config.get('useDomain');
 
-var pluginName = 'gulp-her-jswrapper';
-
-function createError(file, err) {
-  if (typeof err === 'string') {
-    return new PluginError(pluginName, file.path + ': ' + err, {
-      fileName: file.path,
-      showStack: false
-    });
-  }
-
-  var msg = err.message || err.msg || 'unspecified error';
-
-  return new PluginError(pluginName, file.path + ': ' + msg, {
-    fileName: file.path,
-    lineNumber: err.line,
-    stack: err.stack,
-    showStack: false
-  });
-}
-
-module.exports = function (opt) {
-  function wrapper(file, encoding, callback) {
-
-    if (file.isNull()) {
-      return callback(null, file);
-    }
-
-    if (file.isStream()) {
-      return callback(createError(file, 'Streaming not supported'));
-    }
-
-    var content = String(file.contents);
-    var reg = new RegExp(requireRegStr, 'g');
-    var deps = [];
-
-    content = content.replace(reg, function (all, requirePrefix, requireStr, requireValueStr) {
-      //requirePrefix is undefined when match from string or comment
-      if (requirePrefix !== undefined) {
-        var rest = her.util.stringQuote(requireValueStr).rest;
-        //standard
-        var dep = her.uri.getId(rest, file.dirname).id;
-
-        if (deps.indexOf(dep) < 0) {
-          deps.push(dep);
+  her.util.map(ret.ids, function (id, file) {
+    //if file already packed, do nothing
+    if (file.packed)
+      return;
+    if (file.release && file.useMap) {
+      if (file.isJsLike || file.isCssLike) {
+        var content = String(file.contents);
+        var hashId = file.getHash();
+        if (file.isCssLike) {
+          content += "\n" + ".css_" + hashId + "{height:88px}";
+          file.contents = new Buffer(content);
         }
-        return requirePrefix + requireStr.replace(rest, dep);
+        var res = ret.map.res[hashId] = {
+          src: file.getUrl(useHash, useDomain),
+          type: file.rExt.replace(/^\./, '')
+        };
+
+        res.defines = [file.id];
+        if (file.requires && file.requires.length) {
+          res.requires = file.requires;
+        }
+        if (file.extras && file.extras.async) {
+          res.requireAsyncs = file.extras.async;
+        }
+      } else if (file.isHtmlLike) {
+        file.addSameNameRequire('.css');
+        var res = ret.map.tpl[file.id] = {
+          src: file.getUrl(),
+          type: file.rExt.replace(/^\./, '')
+        };
+        if(file.requires && file.requires.length){
+          res.deps = file.requires;
+        }
       }
-      return all;
-    });
+    }
+  });
 
-    //deps = deps.concat(defaultDeps);
+  var cwd = process.cwd() || opt.cwd;
+  var ns = her.config.get('namespace');
+  var name = (ns ? ns + '-' : '') + 'map.json';
+  var optimize = her.config.get('optimize');
+  var mapvinyl = new File({
+    cwd: cwd,
+    path: cwd + '/config/' + name,
+    contents: new Buffer(JSON.stringify(ret.map, null, optimize ? null : 4)),
+  });
+  mapvinyl.release = '/';
+  var mapFile = her.file(mapvinyl);
+  ret.pkg[mapFile.id] = mapFile;
 
-    var id = file.getId();
-
-    content = 'define(\'' + id + '\',' + JSON.stringify(deps) +
-    ',function(' + defaultDeps.join(', ') + '){\n\n' + content + '\n\n});';
-
-    file.contents = new Buffer(content);
-
-    callback(null, file);
-  }
-
-  return through.obj(wrapper);
 };
